@@ -1,12 +1,12 @@
-#Go-Git-Repos
+# Go-Git-Repos
 
-# Introduction
+## Introduction
 
 This repository is a very simple go application that's intended to act as a backup for one's Github repos.  Given issues
 in the CyberSecurity realm, it's important to have backups for data - even if it exists on the cloud.  Even for a company
 as great as Github.
 
-# Dependencies and Usage
+## Dependencies and Usage
 
 This project is fairly straightforward, and intended to be easy to use.  The main dependency is you need to have Go
 installed (unless you use a package), and a JSON configuration file stored in your `$HOME/.creds/gh_vars.json`.  This
@@ -19,7 +19,7 @@ file takes the format as follows:
 }
 ```
 
-# Obtaining the Token
+## Obtaining the Token
 To obtain a token:
 1. Click on your profile on the upper right and select "Settings"
 2. Click on "Developer Settings"
