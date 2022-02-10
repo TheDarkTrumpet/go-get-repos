@@ -96,7 +96,7 @@ func getBackupDirectoryNames(files []os.FileInfo) []string {
 	return returnFiles
 }
 
-func readGithubAvailableRepos(vars GHVars) ([]*github.Repository, error) {
+func readGithubRepos(vars GHVars, page int) ([]*github.Repository, error) {
 	PrintHeader("Reading available Github Repos off base username (based off token)")
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -105,15 +105,36 @@ func readGithubAvailableRepos(vars GHVars) ([]*github.Repository, error) {
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
-	lopt := github.ListOptions{PerPage: 100}
+	lopt := github.ListOptions{PerPage: 100, Page: page}
 	opt := &github.RepositoryListOptions{Affiliation: "owner", ListOptions: lopt}
 	repos, _, err := client.Repositories.List(ctx, "", opt)
-	// TODO: 100 is max, I have 97, but ideally adding a loop here to go by page til len == 0, concatenate
-	// then return
+
 	return repos, err
 }
 
-func getReposToClone(files []string, repos []*github.Repository) []github.Repository {
+func readGithubAvailableRepos(vars GHVars) ([]github.Repository, error) {
+	ghRepos := make([]github.Repository, 0, 0)
+	page := 1
+	for {
+		repos, err := readGithubRepos(vars, page)
+
+		if err != nil {
+			return ghRepos, err
+		}
+
+		for x := 0; x < len(repos); x++ {
+			ghRepos = append(ghRepos, *repos[x])
+		}
+
+		if len(repos) == 0 {
+			break
+		}
+		page += 1
+	}
+	return ghRepos, nil
+}
+
+func getReposToClone(files []string, repos []github.Repository) []github.Repository {
 	var ghToClone []github.Repository
 	for _, repo := range repos {
 		inCache := false
@@ -124,7 +145,7 @@ func getReposToClone(files []string, repos []*github.Repository) []github.Reposi
 			}
 		}
 		if !inCache {
-			ghToClone = append(ghToClone, *repo)
+			ghToClone = append(ghToClone, repo)
 		}
 	}
 	return ghToClone
