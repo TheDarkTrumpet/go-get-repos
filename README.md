@@ -31,18 +31,31 @@ makes sense.  A blog post, which will be linked vs the above will be written to 
 
 
 # Usage
-## Backing up Personal Repositories
 
-This project is fairly straightforward, and intended to be easy to use.  The main dependency is you need to have Go
-installed (unless you use a package), and a JSON configuration file stored in your `$HOME/.creds/gh_vars.json`.  This
-file takes the format as follows:
+The basic syntax of this project is:
 
+```shell
+./go-get-repos -creds <file>
+```
+
+The file can exist anywhere on your system.  Note that the home alias, `~/`, won't work.  But, relative paths do work if
+your working directory is where the `go-get-repos` program is located at.
+
+
+## Personal Repositories
+
+Your creds file needs to take the form of a JSON file, in a format similar to the below:
+
+**JSON**
 ```json
 {
 	"token": "<YOUR_GH_TOKEN>",
 	"backup-dir": "/path/to/backup/dir/"
 }
 ```
+
+A note about the `backup-dir` - If you're on Windows, you have to escape paths.  For example, if your path of backup is:
+`C:\Backups`, then the `backup-dir` would be: `C:\\Backups`
 
 ### Obtaining the Token
 To obtain a token:
