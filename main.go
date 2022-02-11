@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/google/go-github/github"
@@ -88,8 +89,13 @@ type GHVars struct {
 
 func loadVars() (GHVars, error) {
 	PrintHeader(fmt.Sprintf("Loading Creds from %v", creds))
-
 	var vars GHVars
+
+	_, err := os.Stat(*creds)
+	if errors.Is(err, os.ErrNotExist) {
+		return vars, errors.New(fmt.Sprintf("File, %s, for settings, does not exist!", *creds))
+	}
+
 	contents, err := ioutil.ReadFile(*creds)
 	err = json.Unmarshal(contents, &vars)
 	if err != nil {
