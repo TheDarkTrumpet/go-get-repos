@@ -1,11 +1,36 @@
 # Go-Git-Repos
 
-## Introduction
+# Introduction
 
 This repository is a very simple go application that's intended to act as a backup for one's Github repos.  Given issues
 in the CyberSecurity realm, it's important to have backups for data - even if it exists on the cloud.  Even for a company
 as great as Github.
 
+## Why Needed?
+
+This comes up every so often, on why this type of thing is needed.  When it comes to personal repositories, if your account gets 
+compromised, you can lose all your repositories fairly quickly.  The delete option is reversible.
+
+With Github Enterprise, this is a tricky part.  There are backups, where you can restore a repository within 90 days, but 
+there's a use case of not deleting, but destroying, a repository that this covers.  The attack vector looks like:
+
+1. User with full privileges (read/write) to repositories is added in an org
+2. User creates a new repository and points it at a current repository (`git remote add`)
+3. User does a push, of that near-empty repository, with `--force` to the destination repository.
+
+In this case, the repository isn't gone, so the undelete mentioned above wouldn't work.  Does Github have a way to 
+restore in those cases?  I don't know, but having repositories backed up locally and then versioned (through Cohesity or the like),
+makes sense.  A blog post, which will be linked vs the above will be written to explore this attack vector.
+
+# Features
+
+* Windows **and** Linux support.
+* Packaged executables for easy use.
+* Can be scheduled in a multitude of tools such as Cron, Windows Task Scheduler, Stonebranch, etc.
+* Can work with both Github Enterprise (Organizational) based repositories, as well as personal repositories.
+
+
+# Usage
 ## Backing up Personal Repositories
 
 This project is fairly straightforward, and intended to be easy to use.  The main dependency is you need to have Go
