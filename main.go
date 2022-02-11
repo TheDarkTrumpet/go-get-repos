@@ -61,8 +61,10 @@ func main() {
 }
 
 type GHVars struct {
-	Token     string `json:"token"`
-	BackupDir string `json:"backup-dir"`
+	Token       string   `json:"token"`
+	Types       []string `json:"types"` // public, internal, private
+	Affiliation string   `json:"org"`
+	BackupDir   string   `json:"backup-dir"`
 }
 
 func loadVars() (GHVars, error) {
@@ -106,8 +108,13 @@ func readGithubRepos(vars GHVars, page int) ([]*github.Repository, error) {
 
 	client := github.NewClient(tc)
 	lopt := github.ListOptions{PerPage: 100, Page: page}
-	opt := &github.RepositoryListOptions{Affiliation: "owner", ListOptions: lopt}
-	repos, _, err := client.Repositories.List(ctx, "", opt)
+	//opt := &github.RepositoryListOptions{Affiliation: "owner", ListOptions: lopt}
+	//repos, _, err := client.Repositories.List(ctx, "", opt)
+	opt := &github.RepositoryListByOrgOptions{
+		Type:        "Private", // "Private", Or Internal
+		ListOptions: lopt,
+	}
+	repos, _, err := client.Repositories.ListByOrg(context.Background(), "UFGInsurance", opt)
 
 	return repos, err
 }
