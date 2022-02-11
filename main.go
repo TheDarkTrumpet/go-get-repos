@@ -105,7 +105,6 @@ func getBackupDirectoryNames(files []os.FileInfo) []string {
 }
 
 func getGithubClient(vars GHVars) *github.Client {
-	PrintHeader("Reading available Github Repos off base username (based off token)")
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: vars.Token},
 	)
@@ -117,6 +116,7 @@ func getGithubClient(vars GHVars) *github.Client {
 }
 
 func readPersonalGithubRepos(vars GHVars) ([]github.Repository, error) {
+	PrintHeader("Reading PERSONAL Github Repos")
 	ghRepos := make([]github.Repository, 0, 20)
 	page := 1
 	for {
@@ -143,6 +143,7 @@ func readPersonalGithubRepos(vars GHVars) ([]github.Repository, error) {
 }
 
 func readOrganizationGithubRepos(vars GHVars) ([]github.Repository, error) {
+	PrintHeader("Reading ORG Github Repos")
 	ghRepos := make([]github.Repository, 0, 20)
 
 	for _, tpe := range vars.Types {
