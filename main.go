@@ -33,7 +33,13 @@ func main() {
 	PrintList(backupDirFiles)
 
 	// Get all repos from Github
-	availableRepos, err := readGithubAvailableRepos(vars)
+	var availableRepos []github.Repository
+	if vars.Affiliation == "" {
+		availableRepos, err = readPersonalGithubRepos(vars)
+	} else {
+		availableRepos, err = readOrganizationGithubRepos(vars)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -98,32 +104,27 @@ func getBackupDirectoryNames(files []os.FileInfo) []string {
 	return returnFiles
 }
 
-func readGithubRepos(vars GHVars, page int) ([]*github.Repository, error) {
+func getGithubClient(vars GHVars) *github.Client {
 	PrintHeader("Reading available Github Repos off base username (based off token)")
-	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: vars.Token},
 	)
-	tc := oauth2.NewClient(ctx, ts)
+	tc := oauth2.NewClient(context.Background(), ts)
 
 	client := github.NewClient(tc)
-	lopt := github.ListOptions{PerPage: 100, Page: page}
-	//opt := &github.RepositoryListOptions{Affiliation: "owner", ListOptions: lopt}
-	//repos, _, err := client.Repositories.List(ctx, "", opt)
-	opt := &github.RepositoryListByOrgOptions{
-		Type:        "Private", // "Private", Or Internal
-		ListOptions: lopt,
-	}
-	repos, _, err := client.Repositories.ListByOrg(context.Background(), "UFGInsurance", opt)
 
-	return repos, err
+	return client
 }
 
-func readGithubAvailableRepos(vars GHVars) ([]github.Repository, error) {
-	ghRepos := make([]github.Repository, 0, 0)
+func readPersonalGithubRepos(vars GHVars) ([]github.Repository, error) {
+	ghRepos := make([]github.Repository, 0, 20)
 	page := 1
 	for {
-		repos, err := readGithubRepos(vars, page)
+		client := getGithubClient(vars)
+		lopt := github.ListOptions{PerPage: 100, Page: page}
+
+		opt := &github.RepositoryListOptions{Affiliation: "owner", ListOptions: lopt}
+		repos, _, err := client.Repositories.List(context.Background(), "", opt)
 
 		if err != nil {
 			return ghRepos, err
@@ -137,6 +138,38 @@ func readGithubAvailableRepos(vars GHVars) ([]github.Repository, error) {
 			break
 		}
 		page += 1
+	}
+	return ghRepos, nil
+}
+
+func readOrganizationGithubRepos(vars GHVars) ([]github.Repository, error) {
+	ghRepos := make([]github.Repository, 0, 20)
+
+	for _, tpe := range vars.Types {
+		page := 1
+		for {
+			client := getGithubClient(vars)
+			lopt := github.ListOptions{PerPage: 100, Page: page}
+
+			opt := &github.RepositoryListByOrgOptions{
+				Type:        tpe, // "Private", Or Internal
+				ListOptions: lopt,
+			}
+			repos, _, err := client.Repositories.ListByOrg(context.Background(), "UFGInsurance", opt)
+
+			if err != nil {
+				return ghRepos, err
+			}
+
+			for x := 0; x < len(repos); x++ {
+				ghRepos = append(ghRepos, *repos[x])
+			}
+
+			if len(repos) == 0 {
+				break
+			}
+			page += 1
+		}
 	}
 	return ghRepos, nil
 }
