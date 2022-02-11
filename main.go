@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -12,9 +13,21 @@ import (
 	"os/exec"
 )
 
-var creds = "gh_vars.json" // Stored in ~/.creds/
+var creds *string
+
+func init() {
+	creds = flag.String("creds", "", "Github Credentials")
+}
 
 func main() {
+	flag.Parse()
+
+	if len(*creds) == 0 {
+		fmt.Println("Usage: defaults.go -creds <file>")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	// Get Token from .creds
 	vars, err := loadVars()
 	if err != nil {
@@ -74,15 +87,10 @@ type GHVars struct {
 }
 
 func loadVars() (GHVars, error) {
-	user, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-	varsFile := fmt.Sprintf("%s/.creds/%s", user, creds)
-	PrintHeader(fmt.Sprintf("Loading Creds from %v", varsFile))
+	PrintHeader(fmt.Sprintf("Loading Creds from %v", creds))
 
 	var vars GHVars
-	contents, err := ioutil.ReadFile(varsFile)
+	contents, err := ioutil.ReadFile(*creds)
 	err = json.Unmarshal(contents, &vars)
 	if err != nil {
 		return vars, err
